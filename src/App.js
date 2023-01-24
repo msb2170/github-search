@@ -1,23 +1,51 @@
-import logo from './logo.svg';
+import {useState} from 'react';
 import './App.css';
+import Form from './Form';
+import User from './User'
+
+async function getResults(query) {
+  try {
+    const data = await fetch(`https:api.github.com/search/users?q=${query}`)
+    const json = await data.json()
+    return json.items || []
+  } catch (error) {
+    throw new Error(error)
+  }
+}
 
 function App() {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+
+  function handleChange(e) {
+    setQuery(e.target.value)
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const results = await getResults(query)
+    setResults(results)
+    console.log(results)
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h2>Github User Search</h2>
+      <Form
+        handleChange={handleChange}
+        handleSubmit={handleSubmit}
+        value={query} 
+      />
+      <h3>Results:</h3>
+      {results.map((user) => (
+        <User
+          avatar={user.avatar_url}
+          key={user.login}
+          url={user.html_url}
+          username={user.login} 
+        />
+      )
+      )}
     </div>
   );
 }
